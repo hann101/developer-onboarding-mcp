@@ -29,8 +29,8 @@ app.add_middleware(
 app.include_router(router, prefix="/api/v1")
 
 # 정적 파일 서빙 (프론트엔드용)
-if os.path.exists("frontend/dist"):
-    app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
+if os.path.exists("frontend/index.html"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
 
 
 @app.on_event("startup")
