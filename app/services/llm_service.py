@@ -4,29 +4,30 @@ from app.core.config import settings
 
 
 class LLMService:
-    """LLM 서비스"""
+    """LLM(Gemini) 서비스"""
     
     def __init__(self):
-        self.gemini_model = None
+        self.model = None
         self._initialize_models()
     
     def _initialize_models(self):
-        """LLM 모델 초기화"""
+        """모델 초기화"""
         try:
-            # Google Gemini 모델 초기화
             if settings.google_api_key:
                 genai.configure(api_key=settings.google_api_key)
-                self.gemini_model = genai.GenerativeModel('gemini-pro')
-                print("✅ Google Gemini LLM 모델 초기화 완료")
+                self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                print("✅ LLM 서비스가 'gemini-1.5-flash-latest' 모델로 초기화되었습니다.")
             else:
                 raise ValueError("Google API 키가 설정되지 않았습니다.")
-                
         except Exception as e:
             print(f"❌ LLM 모델 초기화 실패: {e}")
-            raise
+            self.model = None
     
     def generate_answer(self, question: str, context_chunks: List[str]) -> Dict[str, Any]:
         """컨텍스트를 기반으로 질문에 대한 답변 생성"""
+        if not self.model:
+            raise ValueError("LLM 모델이 초기화되지 않았습니다.")
+            
         try:
             return self._generate_gemini_answer(question, context_chunks)
                 
@@ -50,7 +51,7 @@ class LLMService:
 
 위 컨텍스트를 기반으로 질문에 답변해주세요. 컨텍스트에 없는 정보는 언급하지 마시고, 명확하고 구조화된 답변을 제공해주세요."""
             
-            response = self.gemini_model.generate_content(prompt)
+            response = self.model.generate_content(prompt)
             answer = response.text
             
             # 신뢰도 평가
@@ -59,7 +60,7 @@ class LLMService:
             return {
                 "answer": answer,
                 "confidence": confidence,
-                "model": "Google Gemini Pro",
+                "model": "Google Gemini 1.5 Flash",
                 "sources_used": len(context_chunks)
             }
             
@@ -93,19 +94,16 @@ class LLMService:
             return 0.5  # 기본값
     
     def get_model_info(self) -> Dict[str, Any]:
-        """사용 가능한 모델 정보"""
-        models = []
-        
-        if self.gemini_model:
-            models.append({
-                "name": "Google Gemini Pro",
-                "provider": "Google",
-                "status": "available"
-            })
-        
+        """모델 정보 조회"""
         return {
-            "available_models": models,
-            "default_model": "Google Gemini Pro"
+            "available_models": [
+                {
+                    "name": "Google Gemini 1.5 Flash",
+                    "provider": "Google",
+                    "status": "available"
+                }
+            ],
+            "default_model": "Google Gemini 1.5 Flash"
         }
 
 

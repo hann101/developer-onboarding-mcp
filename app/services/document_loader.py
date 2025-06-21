@@ -24,9 +24,9 @@ class DocumentLoader:
             separators=["\n\n", "\n", " ", ""]
         )
     
-    def load_documents_from_directory(self, directory: str = None) -> List[Dict[str, Any]]:
+    def load_documents_from_directory(self, directory: str = "") -> List[Dict[str, Any]]:
         """디렉토리에서 모든 문서를 로드하고 청킹"""
-        if directory is None:
+        if not directory:
             directory = settings.documents_dir
         
         documents = []
@@ -35,7 +35,7 @@ class DocumentLoader:
         file_patterns = {
             "*.pdf": PyPDFLoader,
             "*.txt": TextLoader,
-            "*.md": UnstructuredMarkdownLoader,
+            "*.md": TextLoader,
             "*.docx": Docx2txtLoader
         }
         
@@ -78,9 +78,9 @@ class DocumentLoader:
         print("🔄 Confluence 연동 기능은 향후 구현 예정입니다.")
         return []
     
-    def get_document_info(self, directory: str = None) -> Dict[str, Any]:
+    def get_document_info(self, directory: str = "") -> Dict[str, Any]:
         """문서 디렉토리 정보 조회"""
-        if directory is None:
+        if not directory:
             directory = settings.documents_dir
         
         if not os.path.exists(directory):

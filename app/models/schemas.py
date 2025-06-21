@@ -34,6 +34,7 @@ class HealthResponse(BaseModel):
     status: str
     database_info: Dict[str, Any]
     model_info: Dict[str, Any]
+    chunks_info: Optional[Dict[str, Any]] = None
 
 
 class ErrorResponse(BaseModel):

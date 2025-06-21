@@ -36,11 +36,13 @@ async def health_check():
     try:
         db_info = vector_db.get_collection_info()
         model_info = llm_service.get_model_info()
+        chunks_info = vector_db.get_chunks_info()
         
         return HealthResponse(
             status="healthy",
             database_info=db_info,
-            model_info=model_info
+            model_info=model_info,
+            chunks_info=chunks_info
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"시스템 상태 확인 실패: {str(e)}")
@@ -155,12 +157,23 @@ async def get_search_statistics():
         raise HTTPException(status_code=500, detail=f"검색 통계 조회 실패: {str(e)}")
 
 
+@router.get("/chunks/info")
+async def get_chunks_info():
+    """저장된 청크들의 상세 정보 조회"""
+    try:
+        chunks_info = vector_db.get_chunks_info()
+        return chunks_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"청크 정보 조회 실패: {str(e)}")
+
+
 @router.delete("/documents/clear")
 async def clear_documents():
     """벡터 데이터베이스 초기화"""
     try:
         # ChromaDB 컬렉션 삭제 후 재생성
-        vector_db.collection.delete(where={})
+        if vector_db.collection:
+            vector_db.collection.delete(where={})
         return {"message": "벡터 데이터베이스가 초기화되었습니다."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"데이터베이스 초기화 실패: {str(e)}") 
