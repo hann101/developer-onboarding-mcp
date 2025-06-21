@@ -151,6 +151,21 @@ class VectorDatabase:
             print(f"❌ 청크 정보 조회 실패: {e}")
             return {"error": str(e)}
 
+    def clear_database(self):
+        """벡터 데이터베이스 초기화"""
+        try:
+            if self.collection is None:
+                return {"error": "컬렉션이 초기화되지 않았습니다."}
+            
+            # 모든 문서 삭제
+            self.collection.delete(where={"$and": []})
+            print("✅ 벡터 데이터베이스가 초기화되었습니다.")
+            return {"message": "벡터 데이터베이스가 초기화되었습니다."}
+            
+        except Exception as e:
+            print(f"❌ 데이터베이스 초기화 실패: {e}")
+            return {"error": str(e)}
+
 
 # 전역 데이터베이스 인스턴스
 vector_db = VectorDatabase() 

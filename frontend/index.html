@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>개발자를 위한 맞춤형 Q&A 시스템</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -107,6 +108,100 @@
             line-height: 1.6;
             margin-bottom: 20px;
             color: #333;
+        }
+
+        /* 마크다운 스타일 */
+        .answer-text h1, .answer-text h2, .answer-text h3, .answer-text h4, .answer-text h5, .answer-text h6 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .answer-text h1 { font-size: 1.8em; }
+        .answer-text h2 { font-size: 1.6em; }
+        .answer-text h3 { font-size: 1.4em; }
+        .answer-text h4 { font-size: 1.2em; }
+        .answer-text h5 { font-size: 1.1em; }
+        .answer-text h6 { font-size: 1em; }
+
+        .answer-text p {
+            margin-bottom: 12px;
+        }
+
+        .answer-text ul, .answer-text ol {
+            margin-bottom: 12px;
+            padding-left: 20px;
+        }
+
+        .answer-text li {
+            margin-bottom: 5px;
+        }
+
+        .answer-text code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+
+        .answer-text pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .answer-text pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        .answer-text blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .answer-text table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .answer-text th, .answer-text td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .answer-text th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .answer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .answer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .answer-text strong {
+            font-weight: 600;
+        }
+
+        .answer-text em {
+            font-style: italic;
         }
 
         .confidence-badge {
@@ -246,6 +341,10 @@
                     <div class="stat-number" id="modelStatus">-</div>
                     <div class="stat-label">모델 상태</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="searchOptimization">✓</div>
+                    <div class="stat-label">검색 최적화</div>
+                </div>
             </div>
 
             <!-- 문서 업로드 섹션 -->
@@ -316,8 +415,32 @@
                 document.getElementById('modelStatus').textContent = 
                     data.model_info?.available_models?.length > 0 ? '정상' : '오류';
                 
+                // 검색 최적화 상태 확인
+                await loadSearchOptimization();
+                
             } catch (error) {
                 console.error('통계 로드 실패:', error);
+            }
+        }
+
+        // 검색 최적화 정보 로드
+        async function loadSearchOptimization() {
+            try {
+                const response = await fetch(`${API_BASE}/search/optimize`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('searchOptimization').textContent = '✓';
+                    document.getElementById('searchOptimization').style.color = '#28a745';
+                } else {
+                    document.getElementById('searchOptimization').textContent = '⚠';
+                    document.getElementById('searchOptimization').style.color = '#ffc107';
+                }
+                
+            } catch (error) {
+                console.error('검색 최적화 정보 로드 실패:', error);
+                document.getElementById('searchOptimization').textContent = '⚠';
+                document.getElementById('searchOptimization').style.color = '#ffc107';
             }
         }
 
@@ -397,8 +520,9 @@
             const confidenceBadge = document.getElementById('confidenceBadge');
             const sourcesList = document.getElementById('sourcesList');
 
-            // 답변 텍스트
-            answerText.textContent = data.answer;
+            // 마크다운을 HTML로 변환
+            const htmlContent = marked.parse(data.answer);
+            answerText.innerHTML = htmlContent;
 
             // 신뢰도
             const confidence = Math.round(data.confidence * 100);

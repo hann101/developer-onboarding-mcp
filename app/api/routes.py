@@ -157,6 +157,43 @@ async def get_search_statistics():
         raise HTTPException(status_code=500, detail=f"검색 통계 조회 실패: {str(e)}")
 
 
+@router.post("/search/keywords")
+async def search_by_keywords(keywords: List[str], max_results: int = 5):
+    """키워드 기반 검색"""
+    try:
+        results = search_service.search_by_keywords(keywords, max_results)
+        return {
+            "keywords": keywords,
+            "results": results,
+            "total_found": len(results)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"키워드 검색 실패: {str(e)}")
+
+
+@router.get("/search/optimize")
+async def optimize_search_settings():
+    """검색 설정 최적화 정보"""
+    try:
+        return {
+            "optimization_features": [
+                "하이브리드 검색 (벡터 + 키워드)",
+                "재순위화 알고리즘",
+                "동적 임계값 필터링",
+                "최적화된 청킹 설정",
+                "키워드 매칭 점수"
+            ],
+            "current_settings": {
+                "chunk_size": settings.max_chunk_size,
+                "chunk_overlap": settings.chunk_overlap,
+                "embedding_model": "all-MiniLM-L6-v2",
+                "search_algorithm": "Hybrid Search"
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"최적화 정보 조회 실패: {str(e)}")
+
+
 @router.get("/chunks/info")
 async def get_chunks_info():
     """저장된 청크들의 상세 정보 조회"""
@@ -171,9 +208,9 @@ async def get_chunks_info():
 async def clear_documents():
     """벡터 데이터베이스 초기화"""
     try:
-        # ChromaDB 컬렉션 삭제 후 재생성
-        if vector_db.collection:
-            vector_db.collection.delete(where={})
-        return {"message": "벡터 데이터베이스가 초기화되었습니다."}
+        result = vector_db.clear_database()
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"데이터베이스 초기화 실패: {str(e)}") 

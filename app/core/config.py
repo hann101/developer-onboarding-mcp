@@ -26,8 +26,8 @@ class Settings(BaseSettings):
     
     # 문서 설정
     documents_dir: str = "./documents"
-    max_chunk_size: int = 1000
-    chunk_overlap: int = 200
+    max_chunk_size: int = 800
+    chunk_overlap: int = 150
     
     class Config:
         env_file = ".env"
