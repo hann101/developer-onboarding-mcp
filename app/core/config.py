@@ -1,6 +1,10 @@
 import os
 from typing import Optional
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# .env 파일을 명시적으로 로드
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -27,6 +31,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = False
 
 
